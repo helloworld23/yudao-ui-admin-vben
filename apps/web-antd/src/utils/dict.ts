@@ -273,7 +273,10 @@ enum DICT_TYPE {
   TRADE_ORDER_STATUS = 'trade_order_status', // 订单 - 状态
   TRADE_ORDER_TYPE = 'trade_order_type', // 订单 - 类型
   USER_TYPE = 'user_type',
-  VALIDATION_COMPARE_TYPE = 'validation_compare_type',
-  VALIDATION_VALUE_TYPE = 'validation_value_type',
+
+  VALIDATION_CATEGORY = 'validation_category',
+  VALIDATION_FLAG = 'validation_flag',
+  VALIDATION_RULE_CATEGORY = 'validation_rule_category',
+  VALIDATION_RULE_TYPE = 'validation_rule_type',
 }
 export { DICT_TYPE, getDictLabel, getDictObj, getDictOptions };

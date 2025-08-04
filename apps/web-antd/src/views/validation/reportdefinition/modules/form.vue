@@ -36,6 +36,7 @@ const [Form, formApi] = useVbenForm({
   layout: 'horizontal',
   schema: useFormSchema(),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-4',
 });
 
 const [Modal, modalApi] = useVbenModal({

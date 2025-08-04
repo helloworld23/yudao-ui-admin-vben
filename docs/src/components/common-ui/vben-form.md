@@ -490,7 +490,7 @@ dependencies: {
 
 表单校验需要通过 schema 内的 `rules` 属性进行配置。
 
-rules的值可以是字符串（预定义的校验规则名称），也可以是一个zod的schema。
+rules的值可以是字符串（预定义的校验名称），也可以是一个zod的schema。
 
 #### 预定义的校验规则
 

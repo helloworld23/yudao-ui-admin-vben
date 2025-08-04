@@ -3,5 +3,6 @@
   "reportDefinition": "ReportDefinition",
   "reportRules": "ReportRules",
   "viewDefinition": "ViewDefinition",
-  "viewRules": "ViewRules"
+  "viewRules": "ViewRules",
+  "validation": "Validation"
 }

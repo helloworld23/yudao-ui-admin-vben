@@ -22,6 +22,16 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      fieldName: 'category',
+      label: '分类',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: getDictOptions(DICT_TYPE.VALIDATION_CATEGORY, 'number'),
+        placeholder: '请选择分类',
+      },
+    },
+    {
       fieldName: 'name',
       label: '名字',
       rules: 'required',
@@ -69,6 +79,16 @@ export function useFormSchema(): VbenFormSchema[] {
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
+      fieldName: 'category',
+      label: '分类',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: getDictOptions(DICT_TYPE.VALIDATION_CATEGORY, 'number'),
+        placeholder: '请选择分类',
+      },
+    },
+    {
       fieldName: 'name',
       label: '名字',
       component: 'Input',
@@ -112,6 +132,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useGridColumns(): VxeTableGridOptions<ReportApi.Report>['columns'] {
   return [
     { type: 'checkbox', width: 40 },
+    {
+      field: 'category',
+      title: '分类',
+      minWidth: 120,
+      cellRender: {
+        name: 'CellDict',
+        props: { type: DICT_TYPE.VALIDATION_CATEGORY },
+      },
+    },
     {
       field: 'name',
       title: '名字',

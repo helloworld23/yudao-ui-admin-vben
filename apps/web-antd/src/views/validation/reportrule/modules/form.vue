@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { ReportApi } from '#/api/validation/report';
+import type { ReportRuleApi } from '#/api/validation/reportrule';
 
 import { computed, ref } from 'vue';
 
@@ -8,17 +8,21 @@ import { useVbenModal } from '@vben/common-ui';
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { createReport, getReport, updateReport } from '#/api/validation/report';
+import {
+  createReportRule,
+  getReportRule,
+  updateReportRule,
+} from '#/api/validation/reportrule';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
-const formData = ref<ReportApi.Report>();
+const formData = ref<ReportRuleApi.ReportRule>();
 const getTitle = computed(() => {
   return formData.value?.id
-    ? $t('ui.actionTitle.edit', ['报表定义'])
-    : $t('ui.actionTitle.create', ['报表定义']);
+    ? $t('ui.actionTitle.edit', ['校验规则'])
+    : $t('ui.actionTitle.create', ['校验规则']);
 });
 
 const [Form, formApi] = useVbenForm({
@@ -27,7 +31,7 @@ const [Form, formApi] = useVbenForm({
       class: 'w-full',
     },
     formItemClass: 'col-span-2',
-    labelWidth: 80,
+    labelWidth: 120,
   },
   layout: 'horizontal',
   schema: useFormSchema(),
@@ -43,9 +47,11 @@ const [Modal, modalApi] = useVbenModal({
     }
     modalApi.lock();
     // 提交表单
-    const data = (await formApi.getValues()) as ReportApi.Report;
+    const data = (await formApi.getValues()) as ReportRuleApi.ReportRule;
     try {
-      await (formData.value?.id ? updateReport(data) : createReport(data));
+      await (formData.value?.id
+        ? updateReportRule(data)
+        : createReportRule(data));
       // 关闭并提示
       await modalApi.close();
       emit('success');
@@ -60,14 +66,14 @@ const [Modal, modalApi] = useVbenModal({
       return;
     }
     // 加载数据
-    let data = modalApi.getData<ReportApi.Report>();
+    let data = modalApi.getData<ReportRuleApi.ReportRule>();
     if (!data) {
       return;
     }
     if (data.id) {
       modalApi.lock();
       try {
-        data = await getReport(data.id);
+        data = await getReportRule(data.id);
       } finally {
         modalApi.unlock();
       }

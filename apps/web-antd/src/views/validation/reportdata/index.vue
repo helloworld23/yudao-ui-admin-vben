@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { ReportApi } from '#/api/validation/report';
+import type { ReportDataApi } from '#/api/validation/reportdata';
 
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
@@ -12,21 +11,20 @@ import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteReport,
-  deleteReportListByIds,
-  exportReport,
-  getReportPage,
-} from '#/api/validation/report';
+  deleteReportData,
+  deleteReportDataListByIds,
+  exportReportData,
+  getReportDataPage,
+} from '#/api/validation/reportdata';
+import { getReportDefinitionList } from '#/api/validation/reportdefinition';
 import { $t } from '#/locales';
 
 import { useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
-const router = useRouter();
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
   destroyOnClose: true,
-  fullscreen: true,
 });
 
 /** 刷新表格 */
@@ -34,34 +32,24 @@ function onRefresh() {
   gridApi.query();
 }
 
-/** 创建报表定义 */
+/** 创建报表数据 */
 function handleCreate() {
   formModalApi.setData({}).open();
 }
 
-/** 编辑报表定义 */
-function handleEdit(row: ReportApi.Report) {
+/** 编辑报表数据 */
+function handleEdit(row: ReportDataApi.ReportData) {
   formModalApi.setData(row).open();
 }
 
-/** 查看表样 */
-function handleView(row: ReportApi.Report) {
-  router.push({
-    path: 'report-definition',
-    query: {
-      id: row.id,
-    },
-  });
-}
-
-/** 删除报表定义 */
-async function handleDelete(row: ReportApi.Report) {
+/** 删除报表数据 */
+async function handleDelete(row: ReportDataApi.ReportData) {
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [row.id]),
     key: 'action_key_msg',
   });
   try {
-    await deleteReport(row.id as number);
+    await deleteReportData(row.id as number);
     message.success({
       content: $t('ui.actionMessage.deleteSuccess', [row.id]),
       key: 'action_key_msg',
@@ -72,14 +60,14 @@ async function handleDelete(row: ReportApi.Report) {
   }
 }
 
-/** 批量删除报表定义 */
+/** 批量删除报表数据 */
 async function handleDeleteBatch() {
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting'),
     key: 'action_key_msg',
   });
   try {
-    await deleteReportListByIds(deleteIds.value);
+    await deleteReportDataListByIds(deleteIds.value);
     message.success({
       content: $t('ui.actionMessage.deleteSuccess'),
       key: 'action_key_msg',
@@ -90,20 +78,40 @@ async function handleDeleteBatch() {
   }
 }
 
-const deleteIds = ref<number[]>([]); // 待删除报表定义 ID
-function setDeleteIds({ records }: { records: ReportApi.Report[] }) {
+const deleteIds = ref<number[]>([]); // 待删除报表数据 ID
+function setDeleteIds({ records }: { records: ReportDataApi.ReportData[] }) {
   deleteIds.value = records.map((item) => item.id);
 }
 
 /** 导出表格 */
 async function handleExport() {
-  const data = await exportReport(await gridApi.formApi.getValues());
-  downloadFileFromBlobPart({ fileName: '报表定义.xls', source: data });
+  const data = await exportReportData(await gridApi.formApi.getValues());
+  downloadFileFromBlobPart({ fileName: '报表数据.xls', source: data });
+}
+
+function handleSchemaUpdate(
+  values: Record<string, any>,
+  fieldsChanged: string[],
+) {
+  if (fieldsChanged.includes('reportId')) {
+    const reportId = values.reportId;
+    const key = `report-data:default-key:${reportId}-search`;
+    gridApi.formApi.updateSchema([
+      {
+        key,
+        fieldName: 'columnId',
+        componentProps: {
+          api: async () => getReportDefinitionList([reportId]),
+        },
+      },
+    ]);
+  }
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
+    handleValuesChange: handleSchemaUpdate,
   },
   gridOptions: {
     columns: useGridColumns(),
@@ -114,7 +122,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
-          return await getReportPage({
+          return await getReportDataPage({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
@@ -130,7 +138,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: { code: 'query' },
       search: true,
     },
-  } as VxeTableGridOptions<ReportApi.Report>,
+  } as VxeTableGridOptions<ReportDataApi.ReportData>,
   gridEvents: {
     checkboxAll: setDeleteIds,
     checkboxChange: setDeleteIds,
@@ -142,22 +150,22 @@ const [Grid, gridApi] = useVbenVxeGrid({
   <Page auto-content-height>
     <FormModal @success="onRefresh" />
 
-    <Grid table-title="报表定义列表">
+    <Grid table-title="报表数据列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['报表定义']),
+              label: $t('ui.actionTitle.create', ['报表数据']),
               type: 'primary',
               icon: ACTION_ICON.ADD,
-              auth: ['validation:report:create'],
+              auth: ['validation:report-data:create'],
               onClick: handleCreate,
             },
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',
               icon: ACTION_ICON.DOWNLOAD,
-              auth: ['validation:report:export'],
+              auth: ['validation:report-data:export'],
               onClick: handleExport,
             },
             {
@@ -166,7 +174,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               danger: true,
               icon: ACTION_ICON.DELETE,
               disabled: isEmpty(deleteIds),
-              auth: ['validation:report:delete'],
+              auth: ['validation:report-data:delete'],
               onClick: handleDeleteBatch,
             },
           ]"
@@ -179,24 +187,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
               label: $t('common.edit'),
               type: 'link',
               icon: ACTION_ICON.EDIT,
-              auth: ['validation:report:update'],
+              auth: ['validation:report-data:update'],
               onClick: handleEdit.bind(null, row),
             },
-            {
-              label: $t('validation.viewDefinition'),
-              type: 'link',
-              icon: ACTION_ICON.VIEW,
-              auth: ['validation:report:view'],
-              onClick: handleView.bind(null, row),
-            },
-          ]"
-          :drop-down-actions="[
             {
               label: $t('common.delete'),
               type: 'link',
               danger: true,
               icon: ACTION_ICON.DELETE,
-              auth: ['validation:report:delete'],
+              auth: ['validation:report-data:delete'],
               popConfirm: {
                 title: $t('ui.actionMessage.deleteConfirm', [row.id]),
                 confirm: handleDelete.bind(null, row),

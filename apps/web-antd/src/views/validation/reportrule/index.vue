@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { ReportRulesApi } from '#/api/validation/reportrules';
+import type { ReportRuleApi } from '#/api/validation/reportrule';
 
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
@@ -12,11 +11,11 @@ import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteReportRules,
-  deleteReportRulesListByIds,
-  exportReportRules,
-  getReportRulesPage,
-} from '#/api/validation/reportrules';
+  deleteReportRule,
+  deleteReportRuleListByIds,
+  exportReportRule,
+  getReportRulePage,
+} from '#/api/validation/reportrule';
 import { $t } from '#/locales';
 
 import { useGridColumns, useGridFormSchema } from './data';
@@ -25,6 +24,7 @@ import Form from './modules/form.vue';
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
   destroyOnClose: true,
+  fullscreen: true,
 });
 
 /** 刷新表格 */
@@ -34,27 +34,22 @@ function onRefresh() {
 
 /** 创建校验规则 */
 function handleCreate() {
-  formModalApi
-    .setData({
-      reportId: reportId.value,
-      reportDefinitionId: reportDefinitionId.value,
-    })
-    .open();
+  formModalApi.setData({}).open();
 }
 
 /** 编辑校验规则 */
-function handleEdit(row: ReportRulesApi.ReportRules) {
+function handleEdit(row: ReportRuleApi.ReportRule) {
   formModalApi.setData(row).open();
 }
 
 /** 删除校验规则 */
-async function handleDelete(row: ReportRulesApi.ReportRules) {
+async function handleDelete(row: ReportRuleApi.ReportRule) {
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [row.id]),
     key: 'action_key_msg',
   });
   try {
-    await deleteReportRules(row.id as number);
+    await deleteReportRule(row.id as number);
     message.success({
       content: $t('ui.actionMessage.deleteSuccess', [row.id]),
       key: 'action_key_msg',
@@ -72,7 +67,7 @@ async function handleDeleteBatch() {
     key: 'action_key_msg',
   });
   try {
-    await deleteReportRulesListByIds(deleteIds.value);
+    await deleteReportRuleListByIds(deleteIds.value);
     message.success({
       content: $t('ui.actionMessage.deleteSuccess'),
       key: 'action_key_msg',
@@ -84,36 +79,15 @@ async function handleDeleteBatch() {
 }
 
 const deleteIds = ref<number[]>([]); // 待删除校验规则 ID
-function setDeleteIds({ records }: { records: ReportRulesApi.ReportRules[] }) {
+function setDeleteIds({ records }: { records: ReportRuleApi.ReportRule[] }) {
   deleteIds.value = records.map((item) => item.id);
 }
 
 /** 导出表格 */
 async function handleExport() {
-  const data = await exportReportRules(await gridApi.formApi.getValues());
+  const data = await exportReportRule(await gridApi.formApi.getValues());
   downloadFileFromBlobPart({ fileName: '校验规则.xls', source: data });
 }
-
-// 获取路由实例
-const route = useRoute();
-// 定义变量存储报表 ID
-const reportId = ref<number | undefined>();
-const reportDefinitionId = ref<number | undefined>();
-
-// 挂载后获取路由参数
-onMounted(() => {
-  // 从 query 参数中获取 id（对应跳转时的 query: { id: row.id }）
-  const rDefId = route.query.reportDefinitionId;
-  const rId = route.query.reportId;
-  if (rId) {
-    reportId.value = Number(rId);
-  }
-  if (rDefId) {
-    reportDefinitionId.value = Number(rDefId);
-  }
-  gridApi.formApi.setFieldValue('reportId', reportId.value);
-  gridApi.formApi.setFieldValue('reportDefinitionId', reportDefinitionId.value);
-});
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -128,7 +102,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
-          return await getReportRulesPage({
+          return await getReportRulePage({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
@@ -144,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: { code: 'query' },
       search: true,
     },
-  } as VxeTableGridOptions<ReportRulesApi.ReportRules>,
+  } as VxeTableGridOptions<ReportRuleApi.ReportRule>,
   gridEvents: {
     checkboxAll: setDeleteIds,
     checkboxChange: setDeleteIds,
@@ -161,17 +135,24 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <TableAction
           :actions="[
             {
+              label: $t('validation.validation'),
+              type: 'primary',
+              icon: ACTION_ICON.VIEW,
+              auth: ['validation:report-rule:validation'],
+              onClick: handleCreate,
+            },
+            {
               label: $t('ui.actionTitle.create', ['校验规则']),
               type: 'primary',
               icon: ACTION_ICON.ADD,
-              auth: ['validation:report-rules:create'],
+              auth: ['validation:report-rule:create'],
               onClick: handleCreate,
             },
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',
               icon: ACTION_ICON.DOWNLOAD,
-              auth: ['validation:report-rules:export'],
+              auth: ['validation:report-rule:export'],
               onClick: handleExport,
             },
             {
@@ -180,7 +161,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               danger: true,
               icon: ACTION_ICON.DELETE,
               disabled: isEmpty(deleteIds),
-              auth: ['validation:report-rules:delete'],
+              auth: ['validation:report-rule:delete'],
               onClick: handleDeleteBatch,
             },
           ]"
@@ -193,7 +174,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               label: $t('common.edit'),
               type: 'link',
               icon: ACTION_ICON.EDIT,
-              auth: ['validation:report-rules:update'],
+              auth: ['validation:report-rule:update'],
               onClick: handleEdit.bind(null, row),
             },
             {
@@ -201,7 +182,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               type: 'link',
               danger: true,
               icon: ACTION_ICON.DELETE,
-              auth: ['validation:report-rules:delete'],
+              auth: ['validation:report-rule:delete'],
               popConfirm: {
                 title: $t('ui.actionMessage.deleteConfirm', [row.id]),
                 confirm: handleDelete.bind(null, row),

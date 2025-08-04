@@ -26,6 +26,7 @@ const router = useRouter();
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
   destroyOnClose: true,
+  fullscreen: true,
 });
 /** 刷新表格 */
 function onRefresh() {

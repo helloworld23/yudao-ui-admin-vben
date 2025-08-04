@@ -3,5 +3,6 @@
   "reportDefinition": "报表表样",
   "reportRules": "报表规则",
   "viewDefinition": "查看表样",
-  "viewRules": "查看规则"
+  "viewRules": "查看规则",
+  "validation": "校验"
 }

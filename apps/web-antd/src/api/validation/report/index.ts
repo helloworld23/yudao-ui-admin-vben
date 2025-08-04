@@ -22,6 +22,11 @@ export function getReportPage(params: PageParam) {
   );
 }
 
+/** 查询报表定义分页 */
+export function getReportList() {
+  return requestClient.get<ReportApi.Report[]>('/validation/report/list');
+}
+
 /** 查询报表定义详情 */
 export function getReport(id: number) {
   return requestClient.get<ReportApi.Report>(`/validation/report/get?id=${id}`);

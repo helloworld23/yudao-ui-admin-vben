@@ -22,6 +22,13 @@ export function getReportDefinitionPage(params: PageParam) {
   );
 }
 
+/** 查询报表表样列表 */
+export function getReportDefinitionList(ids: number[]) {
+  return requestClient.get(
+    `/validation/report-definition/list?ids=${ids.join(',')}`,
+  );
+}
+
 /** 查询报表表样详情 */
 export function getReportDefinition(id: number) {
   return requestClient.get<ReportDefinitionApi.ReportDefinition>(
