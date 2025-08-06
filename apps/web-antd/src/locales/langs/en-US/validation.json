@@ -4,5 +4,6 @@
   "reportRules": "ReportRules",
   "viewDefinition": "ViewDefinition",
   "viewRules": "ViewRules",
-  "validation": "Validation"
+  "validation": "Validation",
+  "validating": "Validting"
 }

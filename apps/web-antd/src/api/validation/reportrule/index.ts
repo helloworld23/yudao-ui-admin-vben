@@ -52,6 +52,13 @@ export function deleteReportRule(id: number) {
   return requestClient.delete(`/validation/report-rule/delete?id=${id}`);
 }
 
+/** 校验 */
+export function validateReportRule(ids: number[]) {
+  return requestClient.get(
+    `/validation/report-rule/validation?ids=${ids.join(',')}`,
+  );
+}
+
 /** 批量删除校验规则 */
 export function deleteReportRuleListByIds(ids: number[]) {
   return requestClient.delete(

@@ -2,6 +2,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ReportRuleApi } from '#/api/validation/reportrule';
 
+import { getReportList } from '#/api/validation/report';
 import {
   CommonStatusEnum,
   DICT_TYPE,
@@ -30,21 +31,32 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'reportName',
+      fieldName: 'reportId',
       label: '报文名称',
       rules: 'required',
-      component: 'Input',
+      component: 'ApiSelect',
       componentProps: {
-        placeholder: '请输入报文名称',
+        placeholder: '请选择报表',
+        allowClear: true,
+        api: getReportList,
+        labelField: 'name',
+        valueField: 'id',
       },
     },
     {
-      fieldName: 'fieldName',
+      fieldName: 'fieldId',
       label: '字段名称',
       rules: 'required',
-      component: 'Input',
+      component: 'ApiSelect',
       componentProps: {
-        placeholder: '请输入字段名称',
+        placeholder: '请选择字段',
+        allowClear: true,
+        labelField: 'name',
+        valueField: 'id',
+      },
+      dependencies: {
+        triggerFields: ['reportId'],
+        disabled: (values) => !values.reportId,
       },
     },
     {
@@ -91,17 +103,14 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       fieldName: 'involvedTables',
       label: '涉及的表',
-      component: 'Textarea',
+      component: 'ApiSelect',
       componentProps: {
-        placeholder: '请输入涉及的表',
-      },
-    },
-    {
-      fieldName: 'ruleLogic',
-      label: '规则实现逻辑',
-      component: 'Textarea',
-      componentProps: {
-        placeholder: '请输入规则实现逻辑',
+        placeholder: '请选择报表',
+        allowClear: true,
+        api: getReportList,
+        labelField: 'name',
+        valueField: 'id',
+        mode: 'multiple',
       },
     },
     {
@@ -110,6 +119,14 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Textarea',
       componentProps: {
         placeholder: '请输入限定条件',
+      },
+    },
+    {
+      fieldName: 'ruleLogic',
+      label: '实现逻辑',
+      component: 'Textarea',
+      componentProps: {
+        placeholder: '请输入规则实现逻辑',
       },
     },
     {
@@ -155,21 +172,30 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'reportName',
+      fieldName: 'reportId',
       label: '报文名称',
-      component: 'Input',
+      component: 'ApiSelect',
       componentProps: {
+        placeholder: '请选择报表',
         allowClear: true,
-        placeholder: '请输入报文名称',
+        api: getReportList,
+        labelField: 'name',
+        valueField: 'id',
       },
     },
     {
-      fieldName: 'fieldName',
+      fieldName: 'fieldId',
       label: '字段名称',
-      component: 'Input',
+      component: 'ApiSelect',
       componentProps: {
+        placeholder: '请选择字段',
         allowClear: true,
-        placeholder: '请输入字段名称',
+        labelField: 'name',
+        valueField: 'id',
+      },
+      dependencies: {
+        triggerFields: ['reportId'],
+        disabled: (values) => !values.reportId,
       },
     },
     {
@@ -233,32 +259,7 @@ export function useGridColumns(): VxeTableGridOptions<ReportRuleApi.ReportRule>[
     {
       field: 'ruleDescription',
       title: '规则说明',
-      minWidth: 120,
-    },
-    {
-      field: 'involvedTables',
-      title: '涉及的表',
-      minWidth: 120,
-    },
-    {
-      field: 'ruleLogic',
-      title: '规则实现逻辑',
-      minWidth: 120,
-    },
-    {
-      field: 'conditionExpression',
-      title: '限定条件',
-      minWidth: 120,
-    },
-    {
-      field: 'relationExpression',
-      title: '关联关系',
-      minWidth: 120,
-    },
-    {
-      field: 'description',
-      title: '备注',
-      minWidth: 120,
+      minWidth: 250,
     },
     {
       field: 'status',
@@ -272,7 +273,7 @@ export function useGridColumns(): VxeTableGridOptions<ReportRuleApi.ReportRule>[
     {
       field: 'createTime',
       title: '创建时间',
-      minWidth: 120,
+      minWidth: 180,
       formatter: 'formatDateTime',
     },
     {

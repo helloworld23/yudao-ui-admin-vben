@@ -10,11 +10,13 @@ import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getReportDefinitionList } from '#/api/validation/reportdefinition';
 import {
   deleteReportRule,
   deleteReportRuleListByIds,
   exportReportRule,
   getReportRulePage,
+  validateReportRule,
 } from '#/api/validation/reportrule';
 import { $t } from '#/locales';
 
@@ -35,6 +37,19 @@ function onRefresh() {
 /** 创建校验规则 */
 function handleCreate() {
   formModalApi.setData({}).open();
+}
+
+async function handleValidation() {
+  const hideLoading = message.loading({
+    content: $t('validation.validating'),
+    key: 'action_key_msg',
+  });
+  try {
+    await validateReportRule(deleteIds.value);
+    onRefresh();
+  } finally {
+    hideLoading();
+  }
 }
 
 /** 编辑校验规则 */
@@ -88,10 +103,29 @@ async function handleExport() {
   const data = await exportReportRule(await gridApi.formApi.getValues());
   downloadFileFromBlobPart({ fileName: '校验规则.xls', source: data });
 }
+function handleSchemaUpdate(
+  values: Record<string, any>,
+  fieldsChanged: string[],
+) {
+  if (fieldsChanged.includes('reportId')) {
+    const reportId = values.reportId;
+    const key = `report-rule:default-key:${reportId}-search`;
+    gridApi.formApi.updateSchema([
+      {
+        key,
+        fieldName: 'fieldId',
+        componentProps: {
+          api: async () => getReportDefinitionList([reportId]),
+        },
+      },
+    ]);
+  }
+}
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
+    handleValuesChange: handleSchemaUpdate,
   },
   gridOptions: {
     columns: useGridColumns(),
@@ -139,7 +173,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               type: 'primary',
               icon: ACTION_ICON.VIEW,
               auth: ['validation:report-rule:validation'],
-              onClick: handleCreate,
+              onClick: handleValidation,
             },
             {
               label: $t('ui.actionTitle.create', ['校验规则']),

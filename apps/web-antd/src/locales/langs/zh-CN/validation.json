@@ -4,5 +4,6 @@
   "reportRules": "报表规则",
   "viewDefinition": "查看表样",
   "viewRules": "查看规则",
-  "validation": "校验"
+  "validation": "校验",
+  "validating": "校验中"
 }

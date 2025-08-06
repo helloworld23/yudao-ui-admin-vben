@@ -8,6 +8,7 @@ import { useVbenModal } from '@vben/common-ui';
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
+import { getReportDefinitionList } from '#/api/validation/reportdefinition';
 import {
   createReportRule,
   getReportRule,
@@ -37,7 +38,28 @@ const [Form, formApi] = useVbenForm({
   schema: useFormSchema(),
   showDefaultActions: false,
   wrapperClass: 'grid-cols-4',
+  handleValuesChange: handleSchemaUpdate,
 });
+
+/** 处理 schema 更新 */
+function handleSchemaUpdate(
+  values: Record<string, any>,
+  fieldsChanged: string[],
+) {
+  if (fieldsChanged.includes('reportId')) {
+    const reportId = values.reportId;
+    const key = `report-rule:default-key:${reportId}`;
+    formApi.updateSchema([
+      {
+        key,
+        fieldName: 'fieldId',
+        componentProps: {
+          api: async () => getReportDefinitionList([reportId]),
+        },
+      },
+    ]);
+  }
+}
 
 const [Modal, modalApi] = useVbenModal({
   async onConfirm() {
